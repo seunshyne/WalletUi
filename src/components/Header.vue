@@ -1,9 +1,32 @@
+<script setup>
+import { useAuthStore } from "@/stores/auth";
+import { onMounted } from "vue";
+
+const authStore = useAuthStore()
+</script>
+
 <template>
   <header class="header">
     <div class="logo-section">
       <img src="@/assets/logo.png" alt="Logo" class="logo" />
       <h1>Wallet Dashboard</h1>
     </div>
+
+        <div v-if="authStore.user" class="welcome">
+          <p>Welcome back {{ authStore.user.name }}</p>
+
+          <form action="" @submit.prevent="authStore.logout()">
+          <button class="logout">Logout</button>
+        </form>
+        </div>
+
+      <div v-else class="link">
+      <router-link to="/login" class="btn login-btn">Login</router-link>
+
+        <router-link to="/signup" class="btn signup-btn">Sign Up</router-link>
+      </div>
+      
+
     <div class="user-section">
       <div class="notifications">
         <span class="notif-badge">3</span>
@@ -19,11 +42,7 @@
   </header>
 </template>
 
-<script>
-export default {
-  name: "Header"
-}
-</script>
+
 
 <style scoped>
 .header {
@@ -82,5 +101,19 @@ export default {
   width: 35px;
   height: 35px;
   border-radius: 50%;
+}
+
+.link {
+  display: flex;
+  gap: 20px;
+}
+
+.welcome {
+  display: flex;
+  gap: 20px
+}
+
+.logout {
+  margin-top: 20px;
 }
 </style>

@@ -18,9 +18,14 @@ export default defineConfig({
     server: {
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8000', // 👈 JSON Server URL
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''), // removes /api prefix
+        headers: {
+          Accept:"application/json",
+          "Content-Type": "application/json",
+          changeOringin: true,
+          secure: false,
+        },
       },
     },
   },

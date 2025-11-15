@@ -12,7 +12,7 @@
 </template>
 
 <script setup></script>
-
+  import 
 <style scoped>
 .home-container {
   display: flex;
