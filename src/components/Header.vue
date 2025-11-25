@@ -1,6 +1,6 @@
 <script setup>
-import { useAuthStore } from "@/stores/auth";
-import { onMounted } from "vue";
+import { useAuthStore } from '@/stores/auth'
+import { onMounted } from 'vue'
 
 const authStore = useAuthStore()
 </script>
@@ -12,32 +12,26 @@ const authStore = useAuthStore()
       <h1>Wallet Dashboard</h1>
     </div>
 
-        <div v-if="authStore.user" class="welcome">
-          <p>Welcome back {{ authStore.user.name }}</p>
-
-          <form action="" @submit.prevent="authStore.logout()">
-          <button class="logout">Logout</button>
-        </form>
-        </div>
-
-      <div v-else class="link">
-      <router-link to="/login" class="btn login-btn">Login</router-link>
-
-        <router-link to="/signup" class="btn signup-btn">Sign Up</router-link>
-      </div>
-      
-
-    <div class="user-section">
+    <div v-if="authStore.user" class="user-section">
       <div class="notifications">
         <span class="notif-badge">3</span>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="bell-icon">
-          <path fill="currentColor" d="M12 2C8.1 2 5 5.1 5 9v5H3v2h18v-2h-2V9c0-3.9-3.1-7-7-7z"/>
+          <path fill="currentColor" d="M12 2C8.1 2 5 5.1 5 9v5H3v2h18v-2h-2V9c0-3.9-3.1-7-7-7z" />
         </svg>
       </div>
       <div class="user-info">
-        <img src="@/assets/user.jpg" alt="User" class="avatar"/>
-        <span>John Doe</span>
+        <img src="@/assets/user.jpg" alt="User" class="avatar" />
+        <span>Welcome back {{ authStore.user.name }}</span>
       </div>
+      <form action="" @submit.prevent="authStore.logout()">
+        <button class="logout">Logout</button>
+      </form>
+    </div>
+
+    <div v-else class="link">
+      <router-link to="/login" class="btn login-btn">Login</router-link>
+
+      <router-link to="/signup" class="btn signup-btn">Sign Up</router-link>
     </div>
   </header>
 </template>
@@ -51,7 +45,7 @@ const authStore = useAuthStore()
   align-items: center;
   padding: 15px 25px;
   background-color: #fff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .logo-section {
@@ -110,7 +104,7 @@ const authStore = useAuthStore()
 
 .welcome {
   display: flex;
-  gap: 20px
+  gap: 20px;
 }
 
 .logout {

@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia'
 import { onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 
-const { errors, message, user } = storeToRefs(useAuthStore())
+const { errors, message, user, wallet } = storeToRefs(useAuthStore())
 const { authenticate } = useAuthStore()
 const router = useRouter()
 
@@ -18,7 +18,17 @@ const formData = reactive({
 const handleSubmit = async () => {
   const success = await authenticate('register', formData)
   if (success) {
-    // Redirect manually from the component
+    // Wallet is automatically created and stored in the auth store
+    console.log('Wallet created successfully:', wallet.value)
+    console.log('Wallet address:', wallet.value?.address)
+    console.log('Wallet balance:', wallet.value?.balance)
+
+    // Show success message with wallet info
+    if (wallet.value) {
+      alert(`Registration successful! Your wallet address: ${wallet.value.address}`)
+    }
+
+    // Redirect to dashboard
     router.replace({ name: 'dashboard' })
   } else {
     console.log('Authentication failed, not redirecting')

@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Dashboard from '../views/Dashboard.vue'
+import Transaction from '../views/Transaction.vue'
+import Send from '../views/Send.vue'
 import Signup from '../views/Auth/Signup.vue'
 import Login from '../views/Auth/Login.vue'
 import Home from '../views/Home.vue';
@@ -18,6 +20,18 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       component: Dashboard,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/transactions',
+      name: 'transactions',
+      component: Transaction,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/send',
+      name: 'send',
+      component: Send,
       meta: { requiresAuth: true }
     },
     {
