@@ -1,0 +1,91 @@
+import { defineStore } from "pinia";
+import { useAuthStore } from "@/stores/auth";
+
+export const useTransactionStore = defineStore("transactionStore", {
+    state: () => ({
+        transactions: [],
+        loading: false,
+        error: "",
+    }),
+
+    actions: {
+        async fetchTransactions() {
+            const authStore = useAuthStore();
+            this.loading = true;
+            this.error = "";
+
+            try {
+                const res = await fetch("/api/transactions", {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                });
+
+                const data = await res.json();
+
+                this.transactions = Array.isArray(data.data) ? data.data : [];
+                // FIXED FETCH
+
+            } catch (err) {
+                this.error = "Failed to load transactions";
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        generateIdempotencyKey() {
+            return crypto.randomUUID();
+        },
+
+        async sendMoney(payload) {
+            this.loading = true;
+            this.error = "";
+
+            // FIXED — correct key name
+            if (!payload.client_idempotency_key) {
+                payload.client_idempotency_key = this.generateIdempotencyKey();
+            }
+
+            try {
+                const res = await fetch("/api/transactions/transfer", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.status === "success") {
+                    if (data.sender_transaction) {
+                        this.transactions.unshift(data.sender_transaction);
+                    }
+
+                    return {
+                        ...data,
+                        sender_balance: data.wallet_balance ?? null,
+                    };
+                } else {
+                    this.error = data.message || "Unable to send money";
+                    return null;
+                }
+            } catch (err) {
+                console.error(err);
+                this.error = "Network error. Try again.";
+                return null;
+            } finally {
+                this.loading = false;
+            }
+        },
+    },
+
+    getters: {
+        receivedTransactions: (state) =>
+            state.transactions.filter((t) => t.type === "credit"),
+
+        sentTransactions: (state) =>
+            state.transactions.filter((t) => t.type === "debit"),
+    },
+});

@@ -1,3 +1,15 @@
+<script setup>
+import { onMounted } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
+
+onMounted(async () => {
+  if (!authStore.wallet) {
+    await authStore.fetchWallet()
+  }
+})
+</script>
 <template>
   <div class="dashboard">
     <h2>Wallet Dashboard</h2>
@@ -6,7 +18,7 @@
     <div class="cards">
       <div class="card">
         <h3>Total Balance</h3>
-        <p>$12,340.50</p>
+        <p>{{ authStore.getWalletBalance }} {{ authStore.getWalletCurrency }}</p>
       </div>
       <div class="card">
         <h3>Crypto</h3>
@@ -55,11 +67,7 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "Dashboard",
-};
-</script>
+
 
 <style scoped>
 .dashboard {
@@ -79,7 +87,7 @@ export default {
   min-width: 200px;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .card h3 {
@@ -99,10 +107,11 @@ export default {
   background-color: #fff;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.transactions th, .transactions td {
+.transactions th,
+.transactions td {
   padding: 12px 15px;
   text-align: left;
   border-bottom: 1px solid #eee;

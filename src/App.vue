@@ -1,8 +1,26 @@
+<script>
+import { RouterLink, RouterView } from 'vue-router'
+
+import Header from '@/components/Header.vue'
+import Sidebar from '@/components/Sidebar.vue'
+import Footer from '@/components/Footer.vue'
+
+export default {
+  name: 'App',
+  components: {
+    Header,
+    Sidebar,
+    Footer,
+  },
+}
+</script>
+
 <template>
   <div class="app-container">
     <Sidebar />
     <div class="main-content">
       <Header />
+
       <main>
         <router-view />
       </main>
@@ -11,19 +29,7 @@
   </div>
 </template>
 
-<script>
-import Header from "@/components/Header.vue";
-import Sidebar from "@/components/Sidebar.vue";
-import Footer from "@/components/Footer.vue";
 
-export default {
-  name: "App",
-  components: { 
-    Header, 
-    Sidebar, 
-    Footer }
-};
-</script>
 
 <style>
 .app-container {
