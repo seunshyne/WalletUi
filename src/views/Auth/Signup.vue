@@ -16,23 +16,16 @@ const formData = reactive({
 })
 
 const handleSubmit = async () => {
-  const success = await authenticate('register', formData)
-  if (success) {
-    // Wallet is automatically created and stored in the auth store
-    console.log('Wallet created successfully:', wallet.value)
-    console.log('Wallet address:', wallet.value?.address)
-    console.log('Wallet balance:', wallet.value?.balance)
-
-    // Show success message with wallet info
-    if (wallet.value) {
-      alert(`Registration successful! Your wallet address: ${wallet.value.address}`)
-    }
-
-    // Redirect to dashboard
-    router.replace({ name: 'dashboard' })
-  } else {
-    console.log('Authentication failed, not redirecting')
+  const result = await authenticate('register', formData)
+  if (result?.success && result.type === 'register') {
+    // Redirect to verify email page
+    router.replace({
+      name: 'verify-email',
+    })
   }
+  // else {
+  //   console.log('Authentication failed, not redirecting')
+  // }
 }
 
 onMounted(() => {

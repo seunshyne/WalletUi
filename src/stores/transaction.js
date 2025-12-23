@@ -83,9 +83,21 @@ export const useTransactionStore = defineStore("transactionStore", {
 
     getters: {
         receivedTransactions: (state) =>
-            state.transactions.filter((t) => t.type === "credit"),
+            state.transactions
+                .filter((t) => t.type === "credit")
+                .map((t) => ({
+                    ...t,
+                    counterparty_name: t.sender?.name ?? 'Unknown',
+                    counterparty_address: t.sender?.address ?? 'Unknown',
+                })),
 
         sentTransactions: (state) =>
-            state.transactions.filter((t) => t.type === "debit"),
+            state.transactions
+                .filter((t) => t.type === "debit")
+                .map((t) => ({
+                    ...t,
+                    counterparty_name: t.recipient?.name ?? 'Unknown',
+                    counterparty_address: t.recipient?.address ?? 'Unknown',
+                })),
     },
 });

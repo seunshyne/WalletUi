@@ -21,13 +21,9 @@ onMounted(async () => {
 })
 
 // Computed lists for sent and received transactions
-const sentTransactions = computed(() =>
-  transactionStore.transactions.filter((t) => t.type === 'debit')
-)
+const sentTransactions = computed(() => transactionStore.sentTransactions)
 
-const receivedTransactions = computed(() =>
-  transactionStore.transactions.filter((t) => t.type === 'credit')
-)
+const receivedTransactions = computed(() => transactionStore.receivedTransactions)
 
 // Format currency
 function formatCurrency(amount) {
@@ -76,11 +72,11 @@ function formatDate(date) {
             </div>
             <div class="transaction-details">
               <span class="label">From:</span>
-              <span class="value">{{ t.sender_info?.name || 'Unknown' }}</span>
+              <span class="value">{{ t.counterparty_name || 'Unknown' }}</span>
             </div>
             <div class="transaction-details">
               <span class="label">Address:</span>
-              <span class="value">{{ t.sender_info?.address || 'N/A' }}</span>
+              <span class="value">{{ t.counterparty_address || 'Unknown' }}</span>
             </div>
             <div v-if="t.description" class="transaction-details">
               <span class="label">Note:</span>
@@ -105,11 +101,11 @@ function formatDate(date) {
             </div>
             <div class="transaction-details">
               <span class="label">To:</span>
-              <span class="value">{{ t.recipient_info?.name || 'Unknown' }}</span>
+              <span class="value">{{ t.counterparty_name || 'Unknown' }}</span>
             </div>
             <div class="transaction-details">
               <span class="label">Address:</span>
-              <span class="value">{{ t.recipient_info?.address || 'N/A' }}</span>
+              <span class="value">{{ t.counterparty_address || 'Unknown' }}</span>
             </div>
             <div v-if="t.description" class="transaction-details">
               <span class="label">Note:</span>

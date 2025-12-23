@@ -5,7 +5,7 @@ import Send from '../views/Send.vue'
 import Signup from '../views/Auth/Signup.vue'
 import Login from '../views/Auth/Login.vue'
 import Home from '../views/Home.vue';
-
+import VerifyEmail from '../views/Auth/VerifyEmail.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,6 +45,11 @@ const router = createRouter({
       name: 'login',
       component: Login,
       meta: { requiresGuest: true }
+    },
+    {
+      path: '/verify-email',
+      name: 'verify-email',
+      component: VerifyEmail,
     },
   ],
 

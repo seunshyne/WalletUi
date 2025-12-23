@@ -15,8 +15,8 @@ const formData = reactive({
 })
 
 const handleSubmit = async () => {
-  const success = await authenticate('login', formData)
-  if (success) {
+  const result = await authenticate('login', formData)
+  if (result.success && result.type === 'login') {
     // Redirect to dashboard after successful login
     router.replace({ name: 'dashboard' })
   } else {

@@ -43,20 +43,26 @@ export const useAuthStore = defineStore("authStore", {
                 });
                 const data = await res.json();
 
-                if (res.ok && data.token) {
+                //LOGIN
+                if (res.ok && apiRoute === "login" && data.token) {
                     localStorage.setItem("token", data.token);
-                    this.user = data.user ?? null;
-                    this.wallet = data.wallet ?? null;
-                    this.message = data.message ?? "";
-                    return true;
-                } else {
-                    this.errors = data.errors || data.error || { general: "Authentication failed" };
-                    return false;
+                    this.user = data.user;
+                    this.wallet = data.wallet;
+                    return { success: true, type: 'login' };
                 }
+                //REGISTER
+                if (res.ok && apiRoute === "register") {
+                    this.message = data.message || "Registration successful. Please verify your email.";
+                    return { success: true, type: 'register' };
+                }
+
+                this.errors = data.errors || data.error || { general: "Authentication failed" };
+                return { success: false };
+
             } catch (err) {
                 console.error("Network error:", err);
                 this.errors = { network: "Connection failed. Please try again." };
-                return false;
+                return { success: false };
             }
         },
 
