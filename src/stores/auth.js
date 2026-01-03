@@ -43,27 +43,80 @@ export const useAuthStore = defineStore("authStore", {
                 });
                 const data = await res.json();
 
-                //LOGIN
-                if (res.ok && apiRoute === "login" && data.token) {
-                    localStorage.setItem("token", data.token);
-                    this.user = data.user;
-                    this.wallet = data.wallet;
-                    return { success: true, type: 'login' };
-                }
-                //REGISTER
-                if (res.ok && apiRoute === "register") {
-                    this.message = data.message || "Registration successful. Please verify your email.";
-                    return { success: true, type: 'register' };
+                // Handle login response
+
+                if (apiRoute === "login") {
+
+                    // Unverified email (returned as 403)
+                    if (res.status === 403 && data.status === "unverified") {
+                        router.push({
+                            name: "verify-email",
+                            query: { email: data.email || formData.email }
+                        });
+                        return { success: false, status: "unverified" };
+                    }
+
+                    // Successful login
+                    if (res.ok && data.token) {
+                        localStorage.setItem("token", data.token);
+                        this.user = data.user;
+                        this.wallet = data.wallet || null;
+                        this.message = data.message || "Login successful";
+                        this.status = data.status || null;
+                        router.push({ name: "dashboard" });
+                        return { success: true, type: "login" };
+                    }
+                    // Other login errors
+                    this.errors = data.errors || data.error || { general: "Login failed" };
+                    this.message = data.message || "";
+                    return { success: false };
+
                 }
 
-                this.errors = data.errors || data.error || { general: "Authentication failed" };
-                return { success: false };
+                // Handle Register response
+                if (apiRoute === "register") {
+                    if (res.ok) {
+                        this.message = data.message || "Registration successful. Please check your inbox to verify email.";
+                        router.push({
+                            name: "verify-email",
+                            query: { email: formData.email }
+                        });
+                        return { success: true, type: "register" };
+                    } else {
+                        // Registration errors
+                        this.errors = data.errors || data.error || { general: "Registration failed" };
+                        this.message = data.message || "";
+                        return { success: false };
+                    }
+                }
 
             } catch (err) {
+
                 console.error("Network error:", err);
                 this.errors = { network: "Connection failed. Please try again." };
-                return { success: false };
+                return false;
             }
+        },
+
+        async resendVerification(email) {
+            if (!email) throw new Error("Email is required to resend verification");
+
+            const res = await fetch("/api/email/resend", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.message || "Failed to resend email");
+            }
+            // Success
+            return data.message || "Verification email resent successfully";
         },
 
         async logout() {

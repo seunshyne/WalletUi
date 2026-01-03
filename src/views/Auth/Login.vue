@@ -19,6 +19,8 @@ const handleSubmit = async () => {
   if (result.success && result.type === 'login') {
     // Redirect to dashboard after successful login
     router.replace({ name: 'dashboard' })
+  } else if (result.status === 'unverified') {
+    console.log('Email not verified, redirecting to verify email page')
   } else {
     console.log('Login failed, not redirecting')
   }

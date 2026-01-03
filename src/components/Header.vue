@@ -9,7 +9,7 @@ const authStore = useAuthStore()
   <header class="header">
     <div class="logo-section">
       <img src="@/assets/logo.png" alt="Logo" class="logo" />
-      <h1>Wallet Dashboard</h1>
+      <h1>PrimeWallet</h1>
     </div>
 
     <div v-if="authStore.user" class="user-section">
