@@ -6,6 +6,10 @@ export const useTransactionStore = defineStore("transactionStore", {
         transactions: [],
         loading: false,
         error: "",
+        resolving: false,
+        recipientPreview: null,
+        recipientError: null,
+        controller: null,
     }),
 
     actions: {
@@ -79,8 +83,47 @@ export const useTransactionStore = defineStore("transactionStore", {
                 this.loading = false;
             }
         },
-    },
 
+        async resolveRecipient(input) {
+            //abort previous request
+            if (this.controller) {
+                this.controller.abort();
+            }
+
+            this.controller = new AbortController();
+            this.resolving = true;
+            this.recipientError = null;
+            this.recipientPreview = null;
+
+            try {
+                //const authStore = useAuthStore();
+                const res = await fetch('/api/resolve-recipient', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem("token")}`,
+                    },
+                    body: JSON.stringify({ recipient: input }),
+                    signal: this.controller.signal,
+                })
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.message || 'Recipient not found')
+                }
+                this.recipientPreview = data;
+                return data;
+            } catch (err) {
+                // Ignore aborted requests
+                if (err.name !== 'AbortError') {
+                    this.recipientError = err.message || 'Failed to resolve recipient';
+                }
+                return null
+            } finally {
+                this.resolving = false
+            }
+        },
+    },
     getters: {
         receivedTransactions: (state) =>
             state.transactions

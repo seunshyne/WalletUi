@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useTransactionStore } from '@/stores/transaction'
+import { watch } from 'vue'
 
 const authStore = useAuthStore()
 const transactionStore = useTransactionStore()
@@ -9,7 +10,7 @@ const transactionStore = useTransactionStore()
 const form = ref({
   amount: '',
   description: '',
-  recipient_address: '',
+  recipient: '', // email or wallet address
 })
 
 const loading = ref(false)
@@ -29,24 +30,38 @@ onMounted(async () => {
 })
 
 async function submitTransaction() {
+  //wallet must be loaded
   if (!authStore.wallet) {
     errorMessage.value = 'Wallet not loaded. Please wait.'
     return
   }
-
-  if (!form.value.recipient_address) {
-    errorMessage.value = 'Please enter a recipient address.'
+  // recipient input must not be empty
+  if (!form.value.recipient) {
+    errorMessage.value = 'Please enter a recipient email or wallet address.'
     return
   }
-
+  // recipient must be resolved(email or wallet)
+  if (!transactionStore.recipientPreview) {
+    errorMessage.value = 'Please enter a valid recipient email or wallet address.'
+    return
+  }
+  //Block unverified recipient emails
+  if (
+    transactionStore.recipientPreview.type === 'email' &&
+    !transactionStore.recipientPreview.verified
+  ) {
+    errorMessage.value = 'Recipient email is not verified.'
+    return
+  }
+  //clear states
   errorMessage.value = ''
   successMessage.value = ''
   loading.value = true
 
   const payload = {
-    wallet_id: authStore.wallet.id,
-    recipient_address: form.value.recipient_address,
-    amount: Number(form.value.amount),
+    //wallet_id: authStore.wallet.id,
+    recipient: form.value.recipient.trim(),
+    amount: form.value.amount.toString(),
     description: form.value.description,
     client_idempotency_key: transactionStore.generateIdempotencyKey(),
   }
@@ -58,12 +73,12 @@ async function submitTransaction() {
       // Update local wallet balance
       authStore.updateWalletBalance(result.sender_wallet_balance)
 
-      successMessage.value = `Successfully sent ₦${payload.amount} to ${payload.recipient_address}`
+      successMessage.value = `Successfully sent ₦${payload.amount} to ${transactionStore.recipientPreview.name}`
 
       // Reset form
       form.value.amount = ''
       form.value.description = ''
-      form.value.recipient_address = ''
+      form.value.recipient = ''
     } else {
       errorMessage.value = result?.message || 'Failed to send money'
     }
@@ -74,6 +89,24 @@ async function submitTransaction() {
 
   loading.value = false
 }
+
+let debounceTimer = null
+
+watch(
+  () => form.value.recipient,
+  (value) => {
+    transactionStore.recipientPreview = null
+    transactionStore.recipientError = null
+
+    if (!value || value.trim().length < 3) return
+
+    clearTimeout(debounceTimer)
+
+    debounceTimer = setTimeout(async () => {
+      transactionStore.resolveRecipient(value.trim())
+    }, 500)
+  }
+)
 </script>
 
 <template>
@@ -83,23 +116,42 @@ async function submitTransaction() {
     <div v-if="walletLoading" style="color: orange">Loading wallet… please wait.</div>
 
     <form v-if="!walletLoading" @submit.prevent="submitTransaction">
-      <input
-        v-model="form.amount"
-        type="number"
-        min="0.01"
-        step="0.01"
-        placeholder="Amount"
-        required
-      />
+      <input v-model="form.amount" type="text" inputmode="decimal" placeholder="Amount" required />
 
       <input v-model="form.description" type="text" placeholder="Description" required />
 
       <input
-        v-model="form.recipient_address"
+        v-model="form.recipient"
         type="text"
-        placeholder="Recipient Wallet Address"
+        placeholder="Recipient Email or Wallet Address"
         required
       />
+
+      <div v-if="transactionStore.resolving" style="color: orange">Checking recipient…</div>
+
+      <div v-if="transactionStore.recipientPreview">
+        <div style="color: green">📧 {{ transactionStore.recipientPreview.email }}</div>
+
+        <p>💼 {{ transactionStore.recipientPreview.wallet_address }}</p>
+
+        <p v-if="transactionStore.recipientPreview.name">
+          👤 Name: {{ transactionStore.recipientPreview.name }}
+        </p>
+
+        <p
+          v-if="
+            transactionStore.recipientPreview.type === 'email' &&
+            !transactionStore.recipientPreview.verified
+          "
+          style="color: red"
+        >
+          ⚠️ Recipient email not verified
+        </p>
+      </div>
+
+      <p v-if="transactionStore.recipientError" class="error">
+        {{ transactionStore.recipientError }}
+      </p>
 
       <button type="submit" :disabled="loading">
         {{ loading ? 'Sending…' : 'Send' }}

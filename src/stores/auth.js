@@ -141,7 +141,7 @@ export const useAuthStore = defineStore("authStore", {
             if (!localStorage.getItem("token")) return null;
 
             try {
-                const res = await fetch("/api/wallet", {
+                const res = await fetch("/api/wallets", {
                     headers: { Authorization: `Bearer ${localStorage.getItem("token")} ` },
                 });
                 const data = await res.json();
